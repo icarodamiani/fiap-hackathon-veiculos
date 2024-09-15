@@ -1,0 +1,43 @@
+spring:
+  application:
+    name: fiap-hackathon-veiculos
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://keycloak.local:7777/auth/realms/vodafone
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
+
+aws:
+  accessKeyId: local
+  secretAccessKey: local
+  region: us-west-2
+  dynamo:
+    uri: http://localhost:8000
+  sqs:
+    uri: http://localhost:9324
+    numberOfMessages: 5
+    waitTimeMessage: 10
+    visibilityTimeOut: 30
+    veiculosUpdate:
+      queue: veiculos_update_queue
+      delay: 1000
+      poolSize: 1
+
+management:
+  health:
+    probes:
+      enabled: true
+  endpoint:
+    loggers:
+      enabled: true
+    health:
+      probes:
+        enabled: true
+      show-details: "ALWAYS"
+  endpoints:
+    web:
+      exposure:
+        include: "*"
