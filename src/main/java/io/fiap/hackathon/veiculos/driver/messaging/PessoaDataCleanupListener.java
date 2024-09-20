@@ -1,9 +1,9 @@
 package io.fiap.hackathon.veiculos.driver.messaging;
 
+import io.fiap.hackathon.veiculos.driven.service.ReservaService;
 import io.fiap.hackathon.veiculos.driven.service.VeiculoService;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,20 +17,20 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 @Component
-public class VeiculosUpdateListener implements CommandLineRunner {
+public class PessoaDataCleanupListener implements CommandLineRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(VeiculosUpdateListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PessoaDataCleanupListener.class);
 
     private final SimpleTriggerContext triggerContext;
     private final PeriodicTrigger trigger;
     private final Scheduler boundedElastic;
-    private final VeiculoService service;
+    private final ReservaService service;
 
-    public VeiculosUpdateListener(@Value("${aws.sqs.veiculosUpdate.delay:10000}")
-                                  String delay,
-                                  @Value("${aws.sqs.veiculosUpdate.poolSize:1}")
-                                  String poolSize,
-                                  VeiculoService service) {
+    public PessoaDataCleanupListener(@Value("${aws.sqs.pessoaDataCleanup.delay:10000}")
+                                      String delay,
+                                     @Value("${aws.sqs.pessoaDataCleanup.poolSize:1}")
+                                      String poolSize,
+                                     ReservaService service) {
         this.service = service;
         boundedElastic = Schedulers.newBoundedElastic(Integer.parseInt(poolSize), 10000,
             "veiculosUpdateListenerPool", 600, true);
@@ -57,7 +57,7 @@ public class VeiculosUpdateListener implements CommandLineRunner {
                         Instant.now(),
                         triggerContext.lastActualExecution(),
                         null))
-                    .flatMapMany(unused -> service.handleVeiculoUpdateEvent())
+                    .flatMapMany(unused -> service.handlePessoaDataCleanup())
                     .doOnComplete(() -> triggerContext.update(
                         triggerContext.lastScheduledExecution(),
                         triggerContext.lastActualExecution(),

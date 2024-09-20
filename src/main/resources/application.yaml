@@ -21,6 +21,10 @@ aws:
     numberOfMessages: 5
     waitTimeMessage: 10
     visibilityTimeOut: 30
+    pessoaDataCleanup:
+      queue: pessoa_data_cleanup_queue
+      delay: 1000
+      poolSize: 1
     veiculosUpdate:
       queue: veiculos_update_queue
       delay: 1000
