@@ -13,6 +13,7 @@ public abstract class Veiculo {
     public abstract String getId();
     public abstract String getAno();
     public abstract String getCor();
+    public abstract String getValor();
     public abstract String getPlaca();
     public abstract String getMarca();
     public abstract String getCambio();
