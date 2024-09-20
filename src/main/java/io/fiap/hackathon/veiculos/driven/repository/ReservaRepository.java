@@ -5,6 +5,7 @@ import io.fiap.hackathon.veiculos.driven.domain.Reserva;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,6 +31,8 @@ public class ReservaRepository {
 
     public Mono<Void> save(Reserva reserva) {
         var atributos = new HashMap<String, AttributeValueUpdate>();
+        atributos.put("CODIGO",
+            AttributeValueUpdate.builder().value(v -> v.s(UUID.randomUUID().toString()).build()).build());
         atributos.put("VEICULO_ID",
             AttributeValueUpdate.builder().value(v -> v.s(reserva.getVeiculoId()).build()).build());
         atributos.put("VEICULO_PLACA",
@@ -84,6 +87,21 @@ public class ReservaRepository {
             .keyConditionExpression("#veiculo = :veiculo")
             .expressionAttributeNames(Map.of("#veiculo", "VEICULO_ID"))
             .expressionAttributeValues(Map.of(":veiculo", AttributeValue.fromS(veiculoId)))
+            .build();
+
+        return Mono.fromFuture(client.query(request))
+            .filter(QueryResponse::hasItems)
+            .flatMapIterable(QueryResponse::items)
+            .map(this::convertItem);
+    }
+
+    public Flux<Reserva> fetchByCodigoReserva(String codigo) {
+        var request = QueryRequest.builder()
+            .tableName(TABLE_NAME)
+            .indexName("CodigoReservaIndex")
+            .keyConditionExpression("#veiculo = :veiculo")
+            .expressionAttributeNames(Map.of("#codigo", "CODIGO"))
+            .expressionAttributeValues(Map.of(":codigo", AttributeValue.fromS(codigo)))
             .build();
 
         return Mono.fromFuture(client.query(request))

@@ -42,12 +42,14 @@ public class ReservaService {
     }
 
     public Flux<Reserva> fetch() {
-        return this.fetch(null, null, null);
+        return this.fetch(null, null, null, null);
     }
 
-    public Flux<Reserva> fetch(String veiculoId, String placa, String renavam) {
+    public Flux<Reserva> fetch(String veiculoId, String placa, String renavam, String codigo) {
         if (StringUtils.hasText(veiculoId)) {
             return reservaRepository.fetchByVeiculoId(veiculoId);
+        } else if (StringUtils.hasText(codigo)) {
+            return reservaRepository.fetchByCodigoReserva(codigo);
         } else if (StringUtils.hasText(placa) && StringUtils.hasText(renavam)) {
             return reservaRepository.fetchByVeiculo(placa, renavam);
         } else if (StringUtils.hasText(placa) || StringUtils.hasText(renavam)) {

@@ -45,8 +45,11 @@ public class ReservaController {
 
     @GetMapping
     @Operation(description = "Busca reservas")
-    public Flux<ReservaDTO> fetch(@RequestParam String veiculoId, @RequestParam String placa, @RequestParam String renavam) {
-        return reservaService.fetch(veiculoId, placa, renavam)
+    public Flux<ReservaDTO> fetch(@RequestParam(required = false) String veiculoId,
+                                  @RequestParam(required = false) String placa,
+                                  @RequestParam(required = false) String renavam,
+                                  @RequestParam(required = false) String codigo) {
+        return reservaService.fetch(veiculoId, placa, renavam, codigo)
             .map(reservaMapper::dtoFromDomain);
     }
 }
