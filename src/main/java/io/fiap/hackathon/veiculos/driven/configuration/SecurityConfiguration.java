@@ -35,7 +35,7 @@ public class SecurityConfiguration {
                     .permitAll());
         } else {
             security.authorizeExchange(authorizeExchangeSpec ->
-                authorizeExchangeSpec.pathMatchers("/pessoas")
+                authorizeExchangeSpec.pathMatchers("/veiculos")
                     .authenticated()
                     .anyExchange()
                     .permitAll());
