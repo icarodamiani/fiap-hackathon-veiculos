@@ -25,7 +25,7 @@ public class ReservaService {
     public ReservaService(ReservaRepository reservaRepository,
                           SqsMessageClient messageClient,
                           ObjectMapper objectMapper,
-                          @Value("${aws.sqs.pessoaDataCleanup.queue}")
+                          @Value("${aws.sqs.pessoaExclusaoDados.queue}")
                           String queue) {
         this.reservaRepository = reservaRepository;
         this.messageClient = messageClient;

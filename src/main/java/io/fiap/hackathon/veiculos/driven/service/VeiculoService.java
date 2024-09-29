@@ -8,6 +8,7 @@ import io.fiap.hackathon.veiculos.driven.client.SqsMessageClient;
 import io.fiap.hackathon.veiculos.driven.client.dto.VeiculoQueueMessage;
 import io.fiap.hackathon.veiculos.driven.domain.Reserva;
 import io.fiap.hackathon.veiculos.driven.domain.Veiculo;
+import io.fiap.hackathon.veiculos.driven.exception.TechnicalException;
 import io.fiap.hackathon.veiculos.driven.repository.VeiculoRepository;
 import io.vavr.CheckedFunction1;
 import io.vavr.CheckedFunction2;
@@ -30,7 +31,7 @@ public class VeiculoService {
     private final SqsMessageClient messageClient;
     private final ObjectMapper objectMapper;
 
-    public VeiculoService(@Value("${aws.sqs.veiculosUpdate.queue}")
+    public VeiculoService(@Value("${aws.sqs.veiculosVenda.queue}")
                           String queue,
                           ReservaService reservaService,
                           VeiculoRepository repository,
@@ -68,16 +69,15 @@ public class VeiculoService {
     }
 
     private Function2<Veiculo, Map<String, LocalDate>, Boolean> filterReservados() {
-        return (veiculo, reservas) -> reservas.containsKey(veiculo.getId()) &&
-            (reservas.get(veiculo.getId()).isAfter(LocalDate.now())
-                && reservas.get(veiculo.getId()).isEqual(LocalDate.now()));
+        return (veiculo, reservas) -> !reservas.containsKey(veiculo.getId()) ||
+            reservas.get(veiculo.getId()).isBefore(LocalDate.now());
     }
 
     public Mono<Veiculo> fetchById(String id) {
         return repository.fetchById(id);
     }
 
-    public Flux<DeleteMessageResponse> handleVeiculoUpdateEvent() {
+    public Flux<DeleteMessageResponse> handleVeiculoConfirmacaoVenda() {
         return messageClient.receive(queue)
             .filter(ReceiveMessageResponse::hasMessages)
             .flatMapIterable(ReceiveMessageResponse::messages)
@@ -86,7 +86,7 @@ public class VeiculoService {
                         try {
                             return objectMapper.readValue(message.body(), VeiculoQueueMessage.class);
                         } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
+                            throw new TechnicalException("Falha ao converter mensagem de atualização de veículo.",e);
                         }
                     }).flatMap(veiculoUpdate ->
                         this.fetchById(veiculoUpdate.getId())

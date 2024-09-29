@@ -1,5 +1,7 @@
 package io.fiap.hackathon.veiculos.driven.repository;
 
+import io.fiap.hackathon.veiculos.driven.domain.ImmutableDocumento;
+import io.fiap.hackathon.veiculos.driven.domain.ImmutablePessoa;
 import io.fiap.hackathon.veiculos.driven.domain.ImmutableReserva;
 import io.fiap.hackathon.veiculos.driven.domain.Reserva;
 import java.time.LocalDate;
@@ -45,6 +47,18 @@ public class ReservaRepository {
             AttributeValueUpdate.builder().value(v -> v.s(String.valueOf(reserva.getExpiraEm().toEpochDay()))).build());
         atributos.put("EXPIRA_EM_TTL",
             AttributeValueUpdate.builder().value(v -> v.s(String.valueOf(reserva.getExpiraEm().toEpochDay()))).build());
+
+
+        var documento = new HashMap<String, AttributeValue>();
+        documento.put("VALOR", AttributeValue.builder().s(reserva.getPessoa().getDocumento().getValor()).build());
+        documento.put("TIPO", AttributeValue.builder().s(reserva.getPessoa().getDocumento().getTipo()).build());
+
+        var pessoa = new HashMap<String, AttributeValue>();
+        pessoa.put("ID", AttributeValue.builder().s(reserva.getPessoa().getId()).build());
+        pessoa.put("DOCUMENTO", AttributeValue.builder().m(documento).build());
+
+        atributos.put("PESSOA",
+            AttributeValueUpdate.builder().value(v -> v.m(pessoa).build()).build());
 
         var request = UpdateItemRequest.builder()
             .attributeUpdates(atributos)
@@ -135,6 +149,15 @@ public class ReservaRepository {
             .veiculoPlaca(item.get("VEICULO_PLACA").s())
             .veiculoRenavam(item.get("VEICULO_RENAVAM").s())
             .veiculoId(item.get("VEICULO_ID").s())
+            .codigo(item.get("CODIGO").s())
+            .pessoa(ImmutablePessoa.builder()
+                .id(item.get("PESSOA").m().get("ID").s())
+                .documento(ImmutableDocumento.builder()
+                    .tipo(item.get("PESSOA").m().get("DOCUMENTO").m().get("TIPO").s())
+                    .valor(item.get("PESSOA").m().get("DOCUMENTO").m().get("VALOR").s())
+                    .build()
+                )
+                .build())
             .reservadoEm(LocalDate.ofEpochDay(
                     Long.parseLong(item.get("RESERVADO_EM").s())
                 )

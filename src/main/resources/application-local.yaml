@@ -1,0 +1,10 @@
+aws:
+  accessKeyId: local
+  secretAccessKey: local
+  dynamo:
+    uri: http://localhost:8000
+  sqs:
+    uri: http://localhost:9324
+
+server:
+  port: 8082

@@ -43,6 +43,8 @@ public class VeiculoRepository {
             AttributeValueUpdate.builder().value(v -> v.s(veiculo.getRenavam()).build()).build());
         atributos.put("MODELO",
             AttributeValueUpdate.builder().value(v -> v.s(veiculo.getModelo()).build()).build());
+        atributos.put("VALOR",
+            AttributeValueUpdate.builder().value(v -> v.s(veiculo.getValor()).build()).build());
         atributos.put("VENDIDO",
             AttributeValueUpdate.builder().value(v -> v.s(veiculo.getVendido().toString()).build()).build());
         atributos.put("MOTORIZACAO",
@@ -129,6 +131,7 @@ public class VeiculoRepository {
             .cambio(item.get("CAMBIO").s())
             .modelo(item.get("MODELO").s())
             .renavam(item.get("RENAVAM").s())
+            .valor(item.get("VALOR").s())
             .vendido(Boolean.valueOf(item.get("VENDIDO").s()))
             .motorizacao(item.get("MOTORIZACAO").s())
             .quilometragem(item.get("QUILOMETRAGEM").s())
