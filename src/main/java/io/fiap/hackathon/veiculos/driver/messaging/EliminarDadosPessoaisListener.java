@@ -16,27 +16,26 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 @Component
-public class PessoaExclusaoDadosListener implements CommandLineRunner {
+public class EliminarDadosPessoaisListener implements CommandLineRunner {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(PessoaExclusaoDadosListener.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(EliminarDadosPessoaisListener.class);
 
     private final SimpleTriggerContext triggerContext;
     private final PeriodicTrigger trigger;
     private final Scheduler boundedElastic;
     private final ReservaService service;
 
-    public PessoaExclusaoDadosListener(@Value("${aws.sqs.pessoaExclusaoDados.delay:10000}")
-                                      String delay,
-                                       @Value("${aws.sqs.pessoaExclusaoDados.poolSize:1}")
-                                      String poolSize,
-                                       ReservaService service) {
+    public EliminarDadosPessoaisListener(@Value("${aws.sqs.pessoaExclusaoDados.delay:10000}")
+                                         String delay,
+                                         @Value("${aws.sqs.pessoaExclusaoDados.poolSize:1}")
+                                         String poolSize,
+                                         ReservaService service) {
         this.service = service;
         boundedElastic = Schedulers.newBoundedElastic(Integer.parseInt(poolSize), 10000,
-            "veiculosUpdateListenerPool", 600, true);
+            "eliminarDadosPessoaisListener", 600, true);
 
         this.triggerContext = new SimpleTriggerContext();
         this.trigger = new PeriodicTrigger(Duration.ofMillis(Long.parseLong(delay)));
-
     }
 
     @Override
@@ -56,7 +55,7 @@ public class PessoaExclusaoDadosListener implements CommandLineRunner {
                         Instant.now(),
                         triggerContext.lastActualExecution(),
                         null))
-                    .flatMapMany(unused -> service.handlePessoaDataCleanup())
+                    .flatMapMany(unused -> service.handleEliminarDadosPessoais())
                     .doOnComplete(() -> triggerContext.update(
                         triggerContext.lastScheduledExecution(),
                         triggerContext.lastActualExecution(),

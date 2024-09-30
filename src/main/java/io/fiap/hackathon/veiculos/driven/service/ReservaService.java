@@ -3,7 +3,7 @@ package io.fiap.hackathon.veiculos.driven.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.fiap.hackathon.veiculos.driven.client.SqsMessageClient;
-import io.fiap.hackathon.veiculos.driven.client.dto.PessoaDataCleanupMessage;
+import io.fiap.hackathon.veiculos.driven.client.dto.PessoaExclusaoDadosMessage;
 import io.fiap.hackathon.veiculos.driven.domain.Reserva;
 import io.fiap.hackathon.veiculos.driven.repository.ReservaRepository;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,14 +59,14 @@ public class ReservaService {
         return reservaRepository.fetch();
     }
 
-    public Flux<DeleteMessageResponse> handlePessoaDataCleanup() {
+    public Flux<DeleteMessageResponse> handleEliminarDadosPessoais() {
         return messageClient.receive(queue)
             .filter(ReceiveMessageResponse::hasMessages)
             .flatMapIterable(ReceiveMessageResponse::messages)
             .flatMap(message ->
                 Mono.fromSupplier(() -> {
                         try {
-                            return objectMapper.readValue(message.body(), PessoaDataCleanupMessage.class);
+                            return objectMapper.readValue(message.body(), PessoaExclusaoDadosMessage.class);
                         } catch (JsonProcessingException e) {
                             throw new RuntimeException(e);
                         }
