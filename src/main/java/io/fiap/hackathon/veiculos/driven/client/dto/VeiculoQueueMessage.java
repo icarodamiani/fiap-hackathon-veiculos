@@ -11,5 +11,4 @@ import org.immutables.value.Value;
 @Value.Style(privateNoargConstructor = true, jdkOnly = true)
 public abstract class VeiculoQueueMessage {
     public abstract String getId();
-    public abstract JsonPatch getPatch();
 }

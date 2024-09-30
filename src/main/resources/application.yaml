@@ -20,8 +20,8 @@ aws:
       queue: pessoa_exclusao_dados_queue
       delay: 1000
       poolSize: 1
-    veiculosVenda:
-      queue: veiculos_venda_queue
+    veiculosConfirmarVenda:
+      queue: veiculos_confirmar_venda_queue
       delay: 1000
       poolSize: 1
 

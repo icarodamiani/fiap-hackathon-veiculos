@@ -3,6 +3,7 @@ package io.fiap.hackathon.veiculos.driven.domain;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.time.LocalDate;
+import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 @JsonSerialize(as = ImmutableReserva.class)
@@ -10,7 +11,9 @@ import org.immutables.value.Value;
 @Value.Immutable
 @Value.Style(privateNoargConstructor = true, jdkOnly = true)
 public abstract class Reserva {
+    @Nullable
     public abstract String getId();
+    @Nullable
     public abstract String getCodigo();
     public abstract String getVeiculoId();
     public abstract Pessoa getPessoa();

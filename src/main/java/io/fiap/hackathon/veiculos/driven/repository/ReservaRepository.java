@@ -63,7 +63,7 @@ public class ReservaRepository {
         var request = UpdateItemRequest.builder()
             .attributeUpdates(atributos)
             .tableName(TABLE_NAME)
-            .key(Map.of("ID", AttributeValue.fromS(reserva.getId())))
+            .key(Map.of("ID", AttributeValue.fromS(UUID.randomUUID().toString())))
             .build();
 
         return Mono.fromFuture(client.updateItem(request))
@@ -113,7 +113,7 @@ public class ReservaRepository {
         var request = QueryRequest.builder()
             .tableName(TABLE_NAME)
             .indexName("CodigoReservaIndex")
-            .keyConditionExpression("#veiculo = :veiculo")
+            .keyConditionExpression("#codigo = :codigo")
             .expressionAttributeNames(Map.of("#codigo", "CODIGO"))
             .expressionAttributeValues(Map.of(":codigo", AttributeValue.fromS(codigo)))
             .build();

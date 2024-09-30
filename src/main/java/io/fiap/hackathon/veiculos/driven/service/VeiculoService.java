@@ -1,19 +1,18 @@
 package io.fiap.hackathon.veiculos.driven.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.fge.jsonpatch.JsonPatch;
 import io.fiap.hackathon.veiculos.driven.client.SqsMessageClient;
 import io.fiap.hackathon.veiculos.driven.client.dto.VeiculoQueueMessage;
+import io.fiap.hackathon.veiculos.driven.domain.ImmutableVeiculo;
 import io.fiap.hackathon.veiculos.driven.domain.Reserva;
 import io.fiap.hackathon.veiculos.driven.domain.Veiculo;
 import io.fiap.hackathon.veiculos.driven.exception.TechnicalException;
 import io.fiap.hackathon.veiculos.driven.repository.VeiculoRepository;
-import io.vavr.CheckedFunction1;
-import io.vavr.CheckedFunction2;
 import io.vavr.Function2;
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +30,7 @@ public class VeiculoService {
     private final SqsMessageClient messageClient;
     private final ObjectMapper objectMapper;
 
-    public VeiculoService(@Value("${aws.sqs.veiculosVenda.queue}")
+    public VeiculoService(@Value("${aws.sqs.veiculosConfirmarVenda.queue}")
                           String queue,
                           ReservaService reservaService,
                           VeiculoRepository repository,
@@ -64,7 +63,11 @@ public class VeiculoService {
                             .filter(veiculo -> filterReservados().apply(veiculo, reservas))
                             .collectList()
                     )
-                    .flatMapIterable(v -> v))
+                    .flatMapIterable(v -> {
+                            v.sort(Comparator.comparing(o -> new BigDecimal(o.getValor())));
+                            return v;
+                        }
+                    ))
             );
     }
 
@@ -86,23 +89,13 @@ public class VeiculoService {
                         try {
                             return objectMapper.readValue(message.body(), VeiculoQueueMessage.class);
                         } catch (JsonProcessingException e) {
-                            throw new TechnicalException("Falha ao converter mensagem de atualização de veículo.",e);
+                            throw new TechnicalException("Falha ao converter mensagem de atualização de veículo.", e);
                         }
-                    }).flatMap(veiculoUpdate ->
-                        this.fetchById(veiculoUpdate.getId())
-                            .map(veiculo -> applyPatch().unchecked().apply(veiculoUpdate.getPatch(), veiculo))
-                            .map(node -> convertToVeiculo().unchecked().apply(node))
+                    }).flatMap(veiculoUpdate -> this.fetchById(veiculoUpdate.getId())
+                        .map(veiculo -> ImmutableVeiculo.copyOf(veiculo).withVendido(true))
                     )
                     .flatMap(this::save)
                     .flatMap(unused -> messageClient.delete(queue, message))
             );
-    }
-
-    private CheckedFunction2<JsonPatch, Veiculo, JsonNode> applyPatch() {
-        return (patch, veiculo) -> patch.apply(objectMapper.convertValue(veiculo, JsonNode.class));
-    }
-
-    private CheckedFunction1<JsonNode, Veiculo> convertToVeiculo() {
-        return node -> objectMapper.treeToValue(node, Veiculo.class);
     }
 }
